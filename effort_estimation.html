@@ -134,11 +134,7 @@
             var newRow = document.createElement("tr");
 
             newRow.innerHTML = `
-                <td>
-                    <select class="task-dropdown">
-                        <option value="">Select Task</option>
-                    </select>
-                </td>
+                <td><select class="task-dropdown"><option value="">Select Task</option></select></td>
                 <td><input type="number" placeholder="Estimated Hours" onchange="calculateTotal(this)"></td>
                 <td><input type="number" placeholder="Estimated Hours" onchange="calculateTotal(this)"></td>
                 <td><input type="number" placeholder="Estimated Hours" onchange="calculateTotal(this)"></td>
@@ -238,18 +234,21 @@
     <script>
         // Populate Task/ECN No dropdown
         function populateTaskDropdown() {
-            const dropdowns = document.querySelectorAll(".task-dropdown");
-            const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-            
-            dropdowns.forEach(dropdown => {
-                tasks.forEach(task => {
-                    const option = document.createElement("option");
-                    option.value = task;
-                    option.text = task;
-                    dropdown.appendChild(option);
+        const dropdowns = document.querySelectorAll(".task-dropdown");
+        const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        
+        dropdowns.forEach(dropdown => {
+            dropdown.innerHTML = '<option value="">Select Task</option>'; // Reset options
+            tasks.forEach(task => {
+                const option = document.createElement("option");
+                option.value = task;
+                option.text = task;
+                dropdown.appendChild(option);
                 });
-            });
+        });
         }
+
+    window.onload = populateTaskDropdown;
         window.onload = populateTaskDropdown;
     
         // Calculate and store total estimated hours per task
