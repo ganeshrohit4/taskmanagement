@@ -264,51 +264,6 @@
         document.getElementById("assigned").selectedIndex = 0;
     }
 
-    function addNewTask() {
-        const machine = document.getElementById("machine").value;
-        const taskNo = document.getElementById("taskNo").value;
-        const taskDescription = document.getElementById("taskDescription").value;
-        const assigned = document.getElementById("assigned").value;
-
-        if (!machine || !taskNo || !taskDescription || assigned === "Select Assigned") {
-            alert("Please fill in all fields.");
-            return;
-        }
-
-        taskCount++;
-        const tbody = document.getElementById("task-summary-body");
-        const newRow = document.createElement("tr");
-
-        newRow.innerHTML = `
-            <td>${taskCount}</td>
-            <td>${machine}</td>
-            <td><button onclick="showDetailsPopup()">${taskNo}</button></td>
-            <td>${taskDescription}</td>
-            <td>${assigned}</td>
-            <td><input type="date"></td>
-            <td><input type="date"></td>
-            <td style="width: 33%;"><input type="number" id="estimatedHours${taskCount}" placeholder="Hours" oninput="updateProgress(${taskCount})"></td>
-            <td><input type="date"></td>
-            <td><input type="number" id="actualHours${taskCount}" placeholder="Hours" oninput="updateProgress(${taskCount})"></td>
-            <td>
-                <div class="progress-bar-container">
-                    <div id="progressBar${taskCount}" class="progress-bar green"></div>
-                </div>
-                <span id="progressPercent${taskCount}">0%</span>
-            </td>
-            <td><input type="number" id="updatedHours${taskCount}" placeholder="Updated Hours" oninput="updateProgress(${taskCount})"></td>
-            <td><input type="text" id="comments${taskCount}" placeholder="Comments" disabled></td>
-            <td><select><option>In Progress</option><option>Completed</option></select></td>
-        `;
-
-        tbody.prepend(newRow);
-        let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-        if (!tasks.includes(taskNo)) {
-            tasks.push(taskNo);
-            localStorage.setItem("tasks", JSON.stringify(tasks));
-        hidePopup();
-    }
-
     function showDetailsPopup() {
         document.getElementById("detailsPopup").style.display = "block";
         document.getElementById("overlay").style.display = "block";
@@ -373,6 +328,58 @@
     window.onload = loadHours;
 }
 
+</script>
+
+<script>
+    let taskCount = 0;
+
+    function addNewTask() {
+        const machine = document.getElementById("machine").value;
+        const taskNo = document.getElementById("taskNo").value;
+        const taskDescription = document.getElementById("taskDescription").value;
+        const assigned = document.getElementById("assigned").value;
+
+        if (!machine || !taskNo || !taskDescription || assigned === "Select Assigned") {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        taskCount++;
+        const tbody = document.getElementById("task-summary-body");
+        const newRow = document.createElement("tr");
+
+        newRow.innerHTML = `
+            <td>${taskCount}</td>
+            <td>${machine}</td>
+            <td><button onclick="showDetailsPopup()">${taskNo}</button></td>
+            <td>${taskDescription}</td>
+            <td>${assigned}</td>
+            <td><input type="date"></td>
+            <td><input type="date"></td>
+            <td><input type="number" placeholder="Hours"></td>
+            <td><input type="date"></td>
+            <td><input type="number" placeholder="Hours"></td>
+            <td><div class="progress-bar-container"><div class="progress-bar green"></div></div><span>0%</span></td>
+            <td><input type="number" placeholder="Updated Hours"></td>
+            <td><input type="text" placeholder="Comments"></td>
+            <td><select><option>In Progress</option><option>Completed</option></select></td>
+        `;
+
+        tbody.prepend(newRow);
+
+        // Save the new Task ECN in localStorage
+        saveTaskECN(taskNo);
+
+        hidePopup();
+    }
+
+    function saveTaskECN(taskNo) {
+        let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        if (!tasks.includes(taskNo)) {
+            tasks.push(taskNo);
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+    }
 </script>
 
 </body>
