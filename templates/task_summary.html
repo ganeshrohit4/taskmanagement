@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Summary</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sticky Header */
+        .header {
+            position: sticky;
+            top: 0;
+            background-color: #f8f8f8;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            width: 50px;
+            height: auto;
+            margin-right: 10px;
+        }
+        .nav-menu {
+            margin-left: auto;
+        }
+        .nav-menu a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #333;
+        }
+        .container {
+            padding: 20px;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            table-layout: fixed; /* Keeps columns at a fixed width */
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            width: 100px; /* Set a fixed width */
+            max-width: 100px; /* Ensures text stays within the cell */
+            height: 40px; /* Set a fixed height */
+            padding: 2px 4px;
+            border: 1px solid #ddd;
+            text-align: center;
+            word-wrap: break-word; /* Enables text wrapping */
+            white-space: normal; /* Allows text to wrap */
+            overflow: hidden; /* Hides overflow text */
+            
+        }
+        th {
+            background-color: #f2f2f2;
+            font-size: 12px;
+            word-wrap: break-word; /* Enables text wrapping */
+            white-space: 'white-space-trim'; /* Allows text to wrap */
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+           width: 100%;            /* Full width of the cell */
+           padding: 5px;            /* Consistent padding */
+           box-sizing: border-box;  /* Include padding within width */
+           font-size: 14px;         /* Match cell text size */
+        }
+
+    /* Optional: Remove cell padding if needed */
+        td {
+         padding: 0;              /* Ensures input fits neatly */
+        }
+
+
+        /* Button Styling */
+        .add-task-btn {
+            margin-top: 10px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            cursor: pointer;
+        }
+        .add-task-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Popup Style */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1010; /* Higher than other elements */
+        }
+        .popup input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+        }
+        .popup-buttons {
+            margin-top: 10px;
+            text-align: right;
+        }
+        .overlay {
+            position: fixed;
+            display: none;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000; /* Overlay should be beneath the popup */
+        }
+
+        /* Progress Bar Styling */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+        }
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+        .progress-bar.exceed {
+            background-color: red;
+        }
+        .progress-bar.green {
+            background-color: #4caf50;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <img src="logo.png" alt="Logo" class="logo">
+    <div class="nav-menu">
+        <a href="index.html">Home</a>
+        <a href="task_summary.html">Task Summary</a>
+        <a href="effort_estimation.html">Effort Estimation</a>
+    </div>
+</div>
+
+<div class="container">
+    <h2>Task Summary and Management</h2>
+    <button class="add-task-btn" onclick="showNewTaskPopup()">Add New Task</button>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 12%;">Sl. No</th>
+                <th style="width: 17%;">Machine</th>
+                <th style="width: 25%;">Task / ECN No</th>
+                <th style="width: 40%;">Task Description</th>
+                <th style="width: 20%;">Assigned</th>
+                <th style="width: 33%;">Input Date</th>
+                <th style="width: 33%;" >Start Date</th>
+                <th style="width: 33%;">Estimated Hr</th>
+                <th style="width: 33%;">End Date</th>
+                <th style="width: 33%;">Actual Hr</th>
+                <th>Progress</th>
+                <th>Additional Hr </th>
+                <th>Comments</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="task-summary-body">
+            <!-- Task rows will be added here dynamically -->
+        </tbody>
+    </table>
+</div>
+
+<!-- New Task Popup -->
+<div class="overlay" id="overlay"></div>
+<div class="popup" id="newTaskPopup">
+    <h3>Add New Task</h3>
+    <input type="text" id="machine" placeholder="Machine">
+    <input type="text" id="taskNo" placeholder="Task / ECN No">
+    <input type="text" id="taskDescription" placeholder="Task Description">
+    <select id="assigned">
+        <option>Select Assigned</option>
+        <option>Person 1</option>
+        <option>Person 2</option>
+        <option>Person 3</option>
+        <option>Person 4</option>
+    </select>
+    <div class="popup-buttons">
+        <button onclick="addNewTask()">Add</button>
+        <button onclick="hidePopup()">Cancel</button>
+    </div>
+</div>
+
+<!-- Additional Details Popup -->
+<div class="popup" id="detailsPopup">
+    <h3>Additional Details</h3>
+    <table>
+        <thead>
+            <tr>
+                <th colspan="2" style="width: 32%;">CAD</th>
+                <th colspan="3" style="width: 50%;">Teamcenter</th>
+                <th>DQA/Checklist</th>
+                <th colspan="2">Delivery</th>
+            </tr>
+            <tr>
+                <th style="width: 30%;">Modelling</th>
+                <th style="width: 30%;">Drawing</th>
+                <th style="width: 30%;">BOM</th>
+                <th style="width: 30%;">Drawing</th>
+                <th style="width: 30%;">ECN</th>
+                <th></th>
+                <th>Ontime</th>
+                <th>FTR</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><select><option>In Progress</option><option>Completed</option></select></td>
+                <td><select><option>In Progress</option><option>Completed</option></select></td>
+                <td><select><option>In Progress</option><option>Completed</option></select></td>
+                <td><select><option>Approved</option><option>Delivered</option><option>Release</option></select></td>
+                <td><select><option>In Progress</option><option>Released</option></select></td>
+                <td><select><option>Yes</option><option>No</option></select></td>
+                <td><select><option>Yes</option><option>No</option></select></td>
+                <td><select><option>Yes</option><option>No</option></select></td>
+            </tr>
+        </tbody>
+    </table>
+    <button onclick="hideDetailsPopup()">Close</button>
+</div>
+
+<script>
+    let taskCount = 0;
+
+    function showNewTaskPopup() {
+        document.getElementById("newTaskPopup").style.display = "block";
+        document.getElementById("overlay").style.display = "block";
+    }
+
+    function hidePopup() {
+        document.getElementById("newTaskPopup").style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+        clearNewTaskFields();
+    }
+
+    function clearNewTaskFields() {
+        document.getElementById("machine").value = "";
+        document.getElementById("taskNo").value = "";
+        document.getElementById("taskDescription").value = "";
+        document.getElementById("assigned").selectedIndex = 0;
+    }
+
+    function addNewTask() {
+        const machine = document.getElementById("machine").value;
+        const taskNo = document.getElementById("taskNo").value;
+        const taskDescription = document.getElementById("taskDescription").value;
+        const assigned = document.getElementById("assigned").value;
+
+        if (!machine || !taskNo || !taskDescription || assigned === "Select Assigned") {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        taskCount++;
+        const tbody = document.getElementById("task-summary-body");
+        const newRow = document.createElement("tr");
+
+        newRow.innerHTML = `
+            <td>${taskCount}</td>
+            <td>${machine}</td>
+            <td><button onclick="showDetailsPopup()">${taskNo}</button></td>
+            <td>${taskDescription}</td>
+            <td>${assigned}</td>
+            <td><input type="date"></td>
+            <td><input type="date"></td>
+            <td style="width: 33%;"><input type="number" id="estimatedHours${taskCount}" placeholder="Hours" oninput="updateProgress(${taskCount})"></td>
+            <td><input type="date"></td>
+            <td><input type="number" id="actualHours${taskCount}" placeholder="Hours" oninput="updateProgress(${taskCount})"></td>
+            <td>
+                <div class="progress-bar-container">
+                    <div id="progressBar${taskCount}" class="progress-bar green"></div>
+                </div>
+                <span id="progressPercent${taskCount}">0%</span>
+            </td>
+            <td><input type="number" id="updatedHours${taskCount}" placeholder="Updated Hours" oninput="updateProgress(${taskCount})"></td>
+            <td><input type="text" id="comments${taskCount}" placeholder="Comments" disabled></td>
+            <td><select><option>In Progress</option><option>Completed</option></select></td>
+        `;
+
+        tbody.prepend(newRow);
+        let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        if (!tasks.includes(taskNo)) {
+            tasks.push(taskNo);
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        hidePopup();
+    }
+
+    function showDetailsPopup() {
+        document.getElementById("detailsPopup").style.display = "block";
+        document.getElementById("overlay").style.display = "block";
+    }
+
+    function hideDetailsPopup() {
+        document.getElementById("detailsPopup").style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+    }
+
+    function updateProgress(id) {
+        const estimatedHoursInput = document.getElementById(`estimatedHours${id}`);
+        const actualHoursInput = document.getElementById(`actualHours${id}`);
+        const updatedHoursInput = document.getElementById(`updatedHours${id}`);
+        const progressBar = document.getElementById(`progressBar${id}`);
+        const progressPercent = document.getElementById(`progressPercent${id}`);
+        const commentsInput = document.getElementById(`comments${id}`);
+
+        const estimated = parseFloat(estimatedHoursInput.value) || 0;
+        const actual = parseFloat(actualHoursInput.value) || 0;
+        const updated = parseFloat(updatedHoursInput.value);
+
+        if (!isNaN(updated) && updated > 0) {
+            // If updated hours is entered, set progress to 100%
+            progressBar.style.width = "100%";
+            progressPercent.textContent = "100%";
+            progressBar.classList.remove('exceed');
+            progressBar.classList.add('green');
+        } else {
+            // Calculate progress based on estimated and actual hours
+            let progress = estimated ? ((actual / estimated) * 100).toFixed(2) : 0;
+            progressPercent.textContent = `${progress}%`;
+            progressBar.style.width = `${Math.min(progress, 100)}%`;
+
+            // Check if actual hours exceed estimated hours
+            if (actual > estimated) {
+                progressBar.classList.replace('green', 'exceed');
+                updatedHoursInput.disabled = false;
+                commentsInput.disabled = false;
+            } else {
+                progressBar.classList.replace('exceed', 'green');
+                updatedHoursInput.disabled = true;
+                commentsInput.disabled = true;
+                commentsInput.value = "";
+            }
+        }
+    }
+
+    // Load actual and estimated hours from localStorage for each task
+    function loadHours() {
+        const tbody = document.getElementById("task-summary-body");
+        const tasks = JSON.parse(localStorage.getItem("tasksHours")) || {};
+        
+        tbody.querySelectorAll("tr").forEach(row => {
+            const taskNo = row.cells[2].textContent.trim();
+            if (tasks[taskNo]) {
+                row.cells[9].querySelector("input").value = tasks[taskNo].actual; // Actual Hr
+                row.cells[7].querySelector("input").value = tasks[taskNo].estimated; // Estimated Hr
+            }
+        });
+    }
+    window.onload = loadHours;
+}
+
+</script>
+
+</body>
+
+</html>

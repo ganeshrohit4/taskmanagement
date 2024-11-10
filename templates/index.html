@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sticky Header */
+        .header {
+            position: sticky;
+            top: 0;
+            background-color: #f8f8f8;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            width: 50px;
+            height: auto;
+            margin-right: 10px;
+        }
+        .nav-menu {
+            margin-left: auto;
+        }
+        .nav-menu a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #333;
+        }
+        .container {
+            padding: 20px;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            table-layout: fixed; /* Keeps columns at a fixed width */
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            width: 100px; /* Set a fixed width */
+            max-width: 100px; /* Ensures text stays within the cell */
+            height: 40px; /* Set a fixed height */
+            padding: 2px 4px;
+            border: 1px solid #ddd;
+            text-align: center;
+            word-wrap: break-word; /* Enables text wrapping */
+            white-space: normal; /* Allows text to wrap */
+            overflow: hidden; /* Hides overflow text */
+            
+        }
+        th {
+            background-color: #f2f2f2;
+            font-size: 12px;
+            word-wrap: break-word; /* Enables text wrapping */
+            white-space: 'white-space-trim'; /* Allows text to wrap */
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+           width: 100%;            /* Full width of the cell */
+           padding: 5px;            /* Consistent padding */
+           box-sizing: border-box;  /* Include padding within width */
+           font-size: 14px;         /* Match cell text size */
+        }
+
+    /* Optional: Remove cell padding if needed */
+        td {
+         padding: 0;              /* Ensures input fits neatly */
+        }
+
+        /* Button Styling */
+        .add-task-btn {
+            margin-top: 10px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            cursor: pointer;
+        }
+        .add-task-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Popup Style */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1010; /* Higher than other elements */
+        }
+        .popup input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+        }
+        .popup-buttons {
+            margin-top: 10px;
+            text-align: right;
+        }
+        .overlay {
+            position: fixed;
+            display: none;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000; /* Overlay should be beneath the popup */
+        }
+
+        /* Progress Bar Styling */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+        }
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+        .progress-bar.exceed {
+            background-color: red;
+        }
+        .progress-bar.green {
+            background-color: #4caf50;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header with logo and navigation -->
+    <div class="header">
+        <img src="logo.png" alt="Logo" class="logo">
+        <div class="nav-menu">
+            <a href="index.html">Home</a>
+            <a href="task_summary.html">Task Summary</a>
+            <a href="effort_estimation.html">Effort estimation</a>
+        </div>
+    </div>
+
+    <!-- Main content area -->
+    <div class="container">
+        <h2>Task Management</h2>
+        
+        <!-- Button to Add New Week -->
+        <button class="add-week-btn" onclick="addNewWeek()">Add New Week</button>
+        
+        <!-- Dropdown for selecting past weeks -->
+        <select id="historyDropdown" onchange="showPastWeek(this.value)">
+            <option value="">Select Past Week</option>
+        </select>
+
+        <table id="task-table">
+            <thead>
+                <tr>
+                    <th colspan="9" id="week-header">Week (Oct 21 - Oct 27, 2024)</th>
+                </tr>
+                <tr id="date-row">
+                    <th>Task/ECN No</th>
+                    <th>Activity</th>
+                    <th>Oct 21</th>
+                    <th>Oct 22</th>
+                    <th>Oct 23</th>
+                    <th>Oct 24</th>
+                    <th>Oct 25</th>
+                    <th>Oct 26</th>
+                    <th>Oct 27</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" placeholder="Enter task"></td>
+                    <td>
+                        <select>
+                            <option value="Input Study">Input Study</option>
+                            <option value="Concept Design">Concept Design</option>
+                            <option value="Modeling Changes">Modeling Changes</option>
+                            <option value="Drawings">Drawings</option>
+                            <option value="CAD Interruption">CAD Interruption</option>
+                            <option value="TC Attributes">TC Attributes</option>
+                            <option value="BOM">BOM</option>
+                        </select>
+                    </td>
+                    <td><input type="number" placeholder="Hours"></td>
+                    <td><input type="number" placeholder="Hours"></td>
+                    <td><input type="number" placeholder="Hours"></td>
+                    <td><input type="number" placeholder="Hours"></td>
+                    <td><input type="number" placeholder="Hours"></td>
+                    <td><input type="number" placeholder="Hours"></td>
+                    <td><input type="number" placeholder="Hours"></td>
+                </tr>
+                <!-- Additional rows can be added here -->
+            </tbody>
+        </table>
+        <button class="add-task-btn" onclick="addNewTask()">Add New Task</button>
+    </div>
+
+    <script>
+        let history = []; // Array to store past weeks' data
+
+        function addNewTask() {
+            const table = document.querySelector("#task-table tbody");
+            const newRow = document.createElement("tr");
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="Enter task"></td>
+                <td>
+                    <select>
+                        <option value="Input Study">Input Study</option>
+                        <option value="Concept Design">Concept Design</option>
+                        <option value="Modeling Changes">Modeling Changes</option>
+                        <option value="Drawings">Drawings</option>
+                        <option value="CAD Interruption">CAD Interruption</option>
+                        <option value="TC Attributes">TC Attributes</option>
+                        <option value="BOM">BOM</option>
+                    </select>
+                </td>
+                <td><input type="number" placeholder="Hours"></td>
+                <td><input type="number" placeholder="Hours"></td>
+                <td><input type="number" placeholder="Hours"></td>
+                <td><input type="number" placeholder="Hours"></td>
+                <td><input type="number" placeholder="Hours"></td>
+                <td><input type="number" placeholder="Hours"></td>
+                <td><input type="number" placeholder="Hours"></td>
+            `;
+            table.appendChild(newRow);
+        }
+
+        function addNewWeek() {
+            const currentWeekHeader = document.getElementById("week-header").innerText;
+            const tableRows = document.querySelectorAll("#task-table tbody tr");
+            const currentData = Array.from(tableRows).map(row => {
+                return Array.from(row.querySelectorAll("input, select")).map(input => input.value);
+            });
+
+            history.push({ week: currentWeekHeader, data: currentData });
+            updateHistoryDropdown();
+
+            const lastDateText = document.getElementById("date-row").lastElementChild.innerText;
+            const lastDate = new Date(`${lastDateText}, 2024`);
+            const nextWeekDates = Array.from({ length: 7 }, (_, i) => {
+                const nextDate = new Date(lastDate);
+                nextDate.setDate(lastDate.getDate() + 1 + i);
+                return nextDate.toLocaleDateString("en-US", { month: 'short', day: 'numeric' });
+            });
+
+            document.getElementById("week-header").innerText = `Week (${nextWeekDates[0]} - ${nextWeekDates[6]})`;
+            const dateRow = document.getElementById("date-row");
+            dateRow.innerHTML = `<th>Task/ECN Data</th><th>Activity</th>`;
+            nextWeekDates.forEach(date => {
+                const newDateHeader = document.createElement("th");
+                newDateHeader.innerText = date;
+                dateRow.appendChild(newDateHeader);
+            });
+
+            tableRows.forEach(row => {
+                Array.from(row.cells).slice(2).forEach(cell => cell.firstElementChild.value = "");
+            });
+        }
+
+        function updateHistoryDropdown() {
+            const dropdown = document.getElementById("historyDropdown");
+            dropdown.innerHTML = `<option value="">Select Past Week</option>`;
+            history.forEach((entry, index) => {
+                const option = document.createElement("option");
+                option.value = index;
+                option.innerText = entry.week;
+                dropdown.appendChild(option);
+            });
+        }
+
+        function showPastWeek(index) {
+            if (index === "") return;
+            const { week, data } = history[index];
+            document.getElementById("week-header").innerText = week;
+
+            const tableRows = document.querySelectorAll("#task-table tbody tr");
+            data.forEach((rowData, rowIndex) => {
+                const cells = Array.from(tableRows[rowIndex].querySelectorAll("input, select"));
+                rowData.forEach((value, cellIndex) => {
+                    cells[cellIndex].value = value;
+                });
+            });
+        }
+    </script>
+    <script>
+        // Save total actual hours per task in localStorage
+        function saveTotalActualHours() {
+            const taskHours = {};
+            document.querySelectorAll("#task-table tbody tr").forEach(row => {
+                const task = row.cells[0].querySelector("input").value;
+                if (task) {
+                    const total = [...row.querySelectorAll("input[type='number']")]
+                        .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
+                    taskHours[task] = taskHours[task] ? taskHours[task] + total : total;
+                }
+            });
+            localStorage.setItem("tasksHours", JSON.stringify(taskHours));
+        }
+    </script>
+    
+
+</body>
+</html>
