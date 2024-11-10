@@ -302,19 +302,22 @@
         }
     </script>
     <script>
-        // Save total actual hours per task in localStorage
-        function saveTotalActualHours() {
-            const taskHours = {};
-            document.querySelectorAll("#task-table tbody tr").forEach(row => {
-                const task = row.cells[0].querySelector("input").value;
-                if (task) {
-                    const total = [...row.querySelectorAll("input[type='number']")]
-                        .reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
-                    taskHours[task] = taskHours[task] ? taskHours[task] + total : total;
-                }
+        function populateTaskDropdown() {
+        const dropdowns = document.querySelectorAll(".task-dropdown");
+        const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        
+        dropdowns.forEach(dropdown => {
+            dropdown.innerHTML = '<option value="">Select Task</option>'; // Reset options
+            tasks.forEach(task => {
+                const option = document.createElement("option");
+                option.value = task;
+                option.text = task;
+                dropdown.appendChild(option);
+                });
             });
-            localStorage.setItem("tasksHours", JSON.stringify(taskHours));
         }
+
+    window.onload = populateTaskDropdown;
     </script>
     
 
